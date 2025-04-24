@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  password   String
+  role       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  news     News[]    @relation("UserNews")
+  comments Comment[]
+  media    Media[]
+}
+
+model News {
+  id           Int       @id @default(autoincrement())
+  title        String
+  slug         String    @unique
+  content      String
+  status       String
+  author_id    Int
+  category_id  Int
+  published_at DateTime?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+
+  author   User      @relation("UserNews", fields: [author_id], references: [id])
+  category Category  @relation(fields: [category_id], references: [id])
+  comments Comment[]
+}
+
+model Category {
+  id         Int      @id @default(autoincrement())
+  name       String
+  slug       String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  news News[]
+}
+
+model Comment {
+  id         Int      @id @default(autoincrement())
+  article_id Int
+  user_id    Int
+  content    String
+  status     String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  article News @relation(fields: [article_id], references: [id])
+  user    User @relation(fields: [user_id], references: [id])
+}
+
+model Media {
+  id          Int      @id @default(autoincrement())
+  url         String
+  type        String
+  uploaded_by Int
+  created_at  DateTime @default(now())
+
+  uploader User @relation(fields: [uploaded_by], references: [id])
+}
+
+enum Role {
+  USER
+  EDITOR
+}
