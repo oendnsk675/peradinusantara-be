@@ -5,7 +5,7 @@ import { hashedPassword, comparePassword } from "../utils/hashPassword.js";
 // register user baru
 const registerUser = async (req, res) => {
     // mengambil data dari body
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
 
     // validasi input 
     if(!name || !email || !password) {
