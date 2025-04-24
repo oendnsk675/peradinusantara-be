@@ -18,7 +18,7 @@ const registerUser = async (req, res) => {
         // cek apakah username sudah ada di database
         const userExist = await prisma.user.findUnique({ where: {email: email} });
         if (userExist) {
-            return res.status(400).json({ message: "Email sudah terdafter" });
+            return res.status(400).json({ message: "Email sudah terdaftar" });
         }
 
         // hashing password
@@ -42,11 +42,11 @@ const registerUser = async (req, res) => {
 
 // login user 
 const loginUser = async (req, res) => {
-    const { name, email, password } = req.body;
+    const { email, password } = req.body;
 
     // validasi input 
-    if(!name || !email || !password) {
-        return res.status(400).json({ message: "Name, email dan password harus diisi" });
+    if(!email || !password) {
+        return res.status(400).json({ message: "Email dan password harus diisi" });
     }
 
     try {
