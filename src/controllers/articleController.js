@@ -1,59 +1,63 @@
 import prisma from "../configs/db.js";
 
 
-// Fungsi untuk mengambil semua artikel
-const getAllArticles = async (req, res) => {
+// Fungsi untuk mengambil semua berita
+const getAllNews = async (req, res) => {
     try {
-        const articles = await prisma.article.findMany({
+        const news = await prisma.news.findMany({
             include: { category: true, author: true },
-            orderBy: { createdAt: "desc" },// urutkan artikel berdasarkan tanggal dibuat
+            orderBy: { created_at: "desc" },// urutkan artikel berdasarkan tanggal dibuat
         });
-        res.status(200).json({ message: "Berikut daftar artikel yang ada:", data: articles });
+        res.status(200).json({ message: "Berikut daftar berita yang ada:", data: news });
     } catch (error) {
-        res.status(500),json({ error: "Terjadi kesalahan saat mengambil artikel!" });
+        res.status(500).json({ message: "Terjadi kesalahan saat memuat berita!", error: error.message });
     }
 };
 
 
-// tambah artikel baru
-const addNewArticle = async (req, res) => {
+// tambah berita baru
+const addNewNews = async (req, res) => {
     try {
-        const { title, content, imageUrl, categoryId} = req.body;
-        // console.log("nilai kategori:", req.user);
-        const authorId = req.user.id; // ambil id user yang sedang login
+        // console.log(req.user);
+        const { title, slug, content, status, category_id } = req.body;
+        // ambil id user yang sedang login
+        const authorId = req.user.id;
+        // const categoryId = category_id.id;
 
         // validasi input
-        if (!title || !content || !categoryId) {
+        if (!title || !content || !status) {
             return res.status(400).json({ message: "Beberapa field harus diisi!" });
         }
 
-        const newArticle = await prisma.article.create({
+        const newNews = await prisma.news.create({
            data: {
                 title,
+                slug,
                 content,
-                imageUrl,
-                categoryId,
-                authorId
+                status, 
+                author_id: authorId,
+                category_id : parseInt(category_id),
+                published_at: new Date()
             },
-            include: { category: true, author: true }
+            // include: { category: true, author: true }
         });
-        res.status(201).json({ message: "Berhasil menambah artikel baru", data: newArticle });
+        res.status(201).json({ message: "Berhasil menambah berita baru", data: newNews });
     } catch (error) {
-        res.status(500).json({ message: "Terjadi kesalahan saat menambah artikel!", error: error.message });
+        res.status(500).json({ message: "Terjadi kesalahan saat menambah berita!", error: error.message });
     }
 };
 
 
-// mencari artike berdasarkan judul
-const getArticleByTitle = async (req, res) => {
+// mencari berita berdasarkan judul
+const getNewsByTitle = async (req, res) => {
     try {
         const { title } = req.query; //ambil judul request query
     
         // validasi input judul
         if (!title) {
-            return res.status(400).json({ message: "Masukan judul artikel yang akan anda cari:" });
+            return res.status(400).json({ message: "Masukan judul berita yang akan anda cari" });
         } 
-        const articles = await prisma.article.findMany({
+        const news = await prisma.news.findMany({
             where: {
                 title: {
                     contains: title,      // mencari judul artikel yang mengandung kata yang diinput
@@ -64,50 +68,51 @@ const getArticleByTitle = async (req, res) => {
         });
 
         // jika artikel tidak ditemukan
-        if (articles.length === 0) {
-            return res.status(404).json({ message: "Artikel yang anda cari tidak ada!" });
+        if (news.length === 0) {
+            return res.status(404).json({ message: "Berita yang anda cari tidak ada!" });
         }
 
         // jika artikel ada
-        res.status(200).json({ message: "Berikut artikel yang anda cari:", data: articles });
+        res.status(200).json({ message: "Berikut berita yang anda cari:", data: news });
     } catch (error) {
-        res.status(500).json({ error: "Terjadi kesalahan saat mencari artikel!" });
+        res.status(500).json({ error: "Terjadi kesalahan saat mencari berita!" });
     }
 };
 
 
-// update artikel
-const updateArticle = async (req, res) => {
+// update berita
+const updateNews = async (req, res) => {
     try {
         const { id } = req.params; //ambil id artikel dari request parameter
     
         // ambil data artikel yang akan diupdate
-        const { title, content, imageUrl, categoryId } = req.body;
-        const updateArticle = await prisma.article.update({ 
+        const { title, slug, content, status, category_id } = req.body;
+        const news = await prisma.news.update({ 
             where: { id: parseInt(id) },
             data: {
                 title,
                 content,
-                imageUrl,    
-                categoryId,
+                slug,
+                status,
+                category_id: parseInt(category_id)
             },
          });
-         res.status(200).json({ message: "Artikel berhasil diperbarui", data: updateArticle });
+         res.status(200).json({ message: "Berita berhasil diperbarui", data: news });
     } catch (error) {
-        res.status(500).json({ error: "Terjadi kesalahan saat memperbarui artikel!" });
+        res.status(500).json({ error: "Terjadi kesalahan saat memperbarui berita!" });
     }
 };
 
 
-// hapus artikel
-const deleteArticle = async (req, res) => {
+// hapus berita
+const deleteNews = async (req, res) => {
     try{
         const { id } = req.params; //ambil id artikel dari request parameter
-        await prisma.article.delete({ where: { id: parseInt(id) } });
-        res.status(200).json({ message: "Artikel berhasil dihapus" });
+        await prisma.news.delete({ where: { id: parseInt(id) } });
+        res.status(200).json({ message: "Berita berhasil dihapus" });
     } catch (error) {
-        res.status(500).json({ error: "Terjadi kesalahan saat menghapus artikel!" });
+        res.status(500).json({ error: "Terjadi kesalahan saat menghapus berita!" });
     }
 };
 
-export { getAllArticles, addNewArticle, getArticleByTitle, updateArticle, deleteArticle };
+export { getAllNews, addNewNews, getNewsByTitle, updateNews, deleteNews };
