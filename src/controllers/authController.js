@@ -5,14 +5,12 @@ import { hashedPassword, comparePassword } from "../utils/hashPassword.js";
 // register user baru
 const registerUser = async (req, res) => {
     // mengambil data dari body
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
 
     // validasi input 
     if(!name || !email || !password) {
         return res.status(400).json({ message: "Name, email dan password harus diisi" });
     }
-
-    
 
     try {
         // cek apakah username sudah ada di database
@@ -30,7 +28,7 @@ const registerUser = async (req, res) => {
                 name,
                 email,
                 password: passHashed,
-                role: role || "EDITOR" //default role
+                role: "USER" //default role
             },
         });
         return res.status(200).json({ message: "User berhasil didaftarkan", data: user });
