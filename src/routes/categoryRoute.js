@@ -6,7 +6,7 @@ import verifyRole from "../middlewares/authRole.js";
 const routerCategory = express.Router();
 
 // route untuk mengambil semua kategori yang ada
-routerCategory.get("/", verifyToken, verifyRole("EDITOR"), getAllCategories); // route ini hanya dapat diakses oleh user yang telah login
+routerCategory.get("/", verifyToken, getAllCategories); // route ini hanya dapat diakses oleh user yang telah login
 
 // route untuk menambahkan kategori baru
 routerCategory.post("/", verifyToken, verifyRole("EDITOR"), addCategory); // route ini hanya dapat diakses oleh user yang telah login
