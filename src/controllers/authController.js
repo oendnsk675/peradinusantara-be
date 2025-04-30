@@ -30,19 +30,18 @@ const registerUser = async (req, res) => {
         name,
         email,
         password: passHashed,
-        role: role || "EDITOR", //default role
+        role: "USER", //default role
       },
     });
     return res
       .status(200)
       .json({ message: "User berhasil didaftarkan", data: user });
   } catch (error) {
-    return res
-      .status(500)
-      .json({
-        message: "Terjadi kesalahan saat mendaftarkan user",
-        error: error.message,
-      });
+    console.log(error);
+    return res.status(500).json({
+      message: "Terjadi kesalahan saat mendaftarkan user",
+      error: error.message,
+    });
   }
 };
 
@@ -51,10 +50,8 @@ const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   // validasi input
-  if (!name || !email || !password) {
-    return res
-      .status(400)
-      .json({ message: "Name, email dan password harus diisi" });
+  if (!email || !password) {
+    return res.status(400).json({ message: "email dan password harus diisi" });
   }
 
   try {
