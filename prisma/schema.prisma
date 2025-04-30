@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url      = "mysql://perh4452_pradinusantara:pradinusantara@localhost:3306/articles_db"
 }
 
 model User {
