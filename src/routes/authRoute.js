@@ -1,5 +1,9 @@
 import express from "express";
-import { registerUser, loginUser } from "../controllers/authController.js";
+import {
+  loginUser,
+  registerUser,
+  verifyToken,
+} from "../controllers/authController.js";
 
 const routerAuth = express.Router();
 
@@ -8,7 +12,6 @@ routerAuth.post("/register", registerUser);
 
 // route untuk login user
 routerAuth.post("/login", loginUser);
-
-
+routerAuth.get("/verify-token", verifyToken);
 
 export default routerAuth;
