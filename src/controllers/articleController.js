@@ -1,4 +1,5 @@
 import prisma from "../configs/db.js";
+import slugify from "slugify";
 
 // Fungsi untuk mengambil semua berita
 const getAllNews = async (req, res) => {
@@ -22,7 +23,7 @@ const getAllNews = async (req, res) => {
 const addNewNews = async (req, res) => {
   try {
     // console.log(req.user);
-    const { title, slug, content, status, category } = req.body;
+    const { title, content, status, category } = req.body;
     // ambil id user yang sedang login
     const authorId = req.user.id;
 
@@ -31,12 +32,15 @@ const addNewNews = async (req, res) => {
       return res.status(400).json({ message: "Beberapa field harus diisi!" });
     }
 
+    // ubah title menjadi slug
+    const slug = slugify(title, { lower: true, strict: true });
+
     const newNews = await prisma.news.create({
       data: {
         title,
-        slug: "test",
+        slug,
         content,
-        status: "PUBLISH",
+        status,
         author: { connect: { id: +authorId } },
         category: { connect: { id: +category } },
         published_at: new Date(),
@@ -98,15 +102,18 @@ const updateNews = async (req, res) => {
     const { id } = req.params; //ambil id artikel dari request parameter
 
     // ambil data artikel yang akan diupdate
-    const { title, slug, content, status, category_id } = req.body;
+    const { title, content, status, category_id } = req.body;
+
+    // ubah title menjadi slug
+    const slug = slugify(title, { lower: true, strict: true });
     const news = await prisma.news.update({
       where: { id: parseInt(id) },
       data: {
         title,
-        content,
         slug,
+        content,
         status,
-        category_id: parseInt(category_id),
+        category_id: { connect: { id: +category_id } },
       },
     });
     res.status(200).json({ message: "Berita berhasil diperbarui", data: news });
