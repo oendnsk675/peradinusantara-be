@@ -45,13 +45,58 @@ const registerUser = async (req, res) => {
   }
 };
 
+// register admin
+const registerAdmin = async (req, res) => {
+  // mengambil data dari body
+  const { name, email, password } = req.body;
+
+  // validasi input
+  if (!email || !password) {
+    return res.status(400).json({ message: "email dan password harus diisi" });
+  }
+
+  try {
+    // cek apakah username sudah di dtabase
+    const userExist = await prisma.user.findUnique({ where: { email: email } });
+    if (userExist) {
+      return res.status(400).json({ message: "Email sudah terdafter" });
+    }
+
+    // hasing password
+    const passHashed = await hashedPassword(password);
+
+    // menambahkan user baru ke database
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: passHashed,
+        role: "ADMIN",
+      },
+    });
+    return res
+      .status(200)
+      .json({ message: "Admin berhasil didaftarkan", data: user });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({
+        message: "Terjadi kesalahan saat mendaftarkan Admin",
+        error: error.message,
+      });
+  }
+};
+
+
 // login user
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   // validasi input
   if (!email || !password) {
-    return res.status(400).json({ message: "email dan password harus diisi" });
+    return res
+      .status(400)
+      .json({ message: "Email dan password harus diisi" });
   }
 
   try {
@@ -102,7 +147,12 @@ const verifyToken = async (req, res) => {
     return res.status(403).json({ message: "Invalid token" });
   }
 
+  // memeriksa apakah token telah kadaluarsa
+  if (error.name === "TokenExpiredError") {
+    return res.status(401).json({ message: "Token telah kadaluarsa." });
+  }
+
   res.json({ message: "Token valid", status: true });
 };
 
-export { loginUser, registerUser, verifyToken };
+export { loginUser, registerUser, registerAdmin, verifyToken };
