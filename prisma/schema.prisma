@@ -79,5 +79,5 @@ model Media {
 
 enum Role {
   USER
-  EDITOR
+  ADMIN
 }

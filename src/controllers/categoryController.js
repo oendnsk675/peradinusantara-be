@@ -1,4 +1,5 @@
 import prisma from "../configs/db.js";
+import slugify from "slugify";
 
 // fungsi untuk mengambil semua kategori
 const getAllCategories = async (req, res) => {
@@ -14,12 +15,15 @@ const getAllCategories = async (req, res) => {
 // menambahkan kategori baru
 const addCategory = async (req, res) => {
     try {
-        const { name, slug } = req.body;
+        const { name } = req.body;
 
         // validasi input
-        if (!name || !slug) {
-            return res.status(400).json({ message: "Name dan slug harus diisi" });
+        if (!name) {
+            return res.status(400).json({ message: "Name harus diisi" });
         }
+
+        // ubah title menjadi slug
+        const slug = slugify(name, { lower: true , strict: true });
 
         const newCategory = await prisma.category.create ({
             data: { name, slug },
@@ -36,7 +40,10 @@ const addCategory = async (req, res) => {
 const updateCategory = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, slug } = req.body;
+        const { name } = req.body;
+
+        // ubah title menjadi slug
+        const slug = slugify(name, { lower: true , strict: true });
 
         const updateCategory = await prisma.category.update({ 
             where: { id: parseInt(id) },

@@ -10,16 +10,16 @@ const routerArticle = express.Router();
 routerArticle.get("/", verifyToken, getAllNews);
 
 // route untuk menambahkan artikel baru
-routerArticle.post("/", verifyToken, verifyRole("EDITOR", "USER"), addNewNews);
+routerArticle.post("/", verifyToken, verifyRole("ADMIN", "USER"), addNewNews);
 
 // route untuk mencari artikel berdasarkan judul
 routerArticle.get("/search", getNewsByTitle); // boleh diakses oleh semua user
 
 // route untuk update artikel
-routerArticle.patch("/:id", verifyToken, verifyIsNewsOwner, verifyRole("EDITOR", "USER"), updateNews);
+routerArticle.patch("/:id", verifyToken, verifyIsNewsOwner, verifyRole("ADMIN", "USER"), updateNews);
 
 // route untuk hapus artikel
-routerArticle.delete("/:id", verifyToken, verifyIsNewsOwner, verifyRole("EDITOR", "USER"), deleteNews);
+routerArticle.delete("/:id", verifyToken, verifyIsNewsOwner, verifyRole("ADMIN", "USER"), deleteNews);
 
 export default routerArticle;
 

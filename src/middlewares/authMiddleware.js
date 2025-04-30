@@ -13,7 +13,6 @@ const verifyToken = (req, res, next) => {
 
     // verifikasi token
     try {
-        
         const decoded = jsonwebtoken.verify(token, process.env.JWT_SECRET);
         // menambahkan user yang terverifikasi ke request
         req.user = decoded;
