@@ -15,7 +15,10 @@ app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
 
-
+app.get("/healthcheck", (req, res) => {
+  res.status(200).json({ message: "Oke!" });
+  return;
+});
 app.use("/auth", routeAuth);
 app.use("/category", routeCategory);
 app.use("/news", routeArticle);
