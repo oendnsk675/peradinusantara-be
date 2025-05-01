@@ -5,5 +5,5 @@
 
 */
 -- AlterTable
-ALTER TABLE `news` ADD COLUMN `image` VARCHAR(191) NOT NULL,
+ALTER TABLE `News` ADD COLUMN `image` VARCHAR(191) NOT NULL,
     MODIFY `content` TEXT NOT NULL;
