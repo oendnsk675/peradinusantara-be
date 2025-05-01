@@ -78,15 +78,12 @@ const registerAdmin = async (req, res) => {
       .status(200)
       .json({ message: "Admin berhasil didaftarkan", data: user });
   } catch (error) {
-    return res
-      .status(500)
-      .json({
-        message: "Terjadi kesalahan saat mendaftarkan Admin",
-        error: error.message,
-      });
+    return res.status(500).json({
+      message: "Terjadi kesalahan saat mendaftarkan Admin",
+      error: error.message,
+    });
   }
 };
-
 
 // login user
 const loginUser = async (req, res) => {
@@ -94,9 +91,7 @@ const loginUser = async (req, res) => {
 
   // validasi input
   if (!email || !password) {
-    return res
-      .status(400)
-      .json({ message: "Email dan password harus diisi" });
+    return res.status(400).json({ message: "Email dan password harus diisi" });
   }
 
   try {
@@ -134,25 +129,26 @@ const loginUser = async (req, res) => {
 };
 
 const verifyToken = async (req, res) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
+  try {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
 
-  if (!token) return res.status(401).json({ message: "Token missing" });
+    if (!token) return res.status(401).json({ message: "Token missing" });
 
-  const decoded = jsonwebtoken.verify(token, process.env.JWT_SECRET);
-  //   {
-  //   decoded: { id: xxx, role: 'EDITOR', iat: 1745983145, exp: 1746069545 }
-  // }
-  if (!decoded) {
-    return res.status(403).json({ message: "Invalid token" });
+    const decoded = jsonwebtoken.verify(token, process.env.JWT_SECRET);
+    if (!decoded) {
+      return res.status(403).json({ message: "Invalid token" });
+    }
+    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
+    if (!user) return res.status(403).json({ message: "User not found" });
+
+    res.json({ message: "Token valid", status: true, data: user });
+  } catch (error) {
+    // memeriksa apakah token telah kadaluarsa
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Token telah kadaluarsa." });
+    }
   }
-
-  // memeriksa apakah token telah kadaluarsa
-  if (error.name === "TokenExpiredError") {
-    return res.status(401).json({ message: "Token telah kadaluarsa." });
-  }
-
-  res.json({ message: "Token valid", status: true });
 };
 
-export { loginUser, registerUser, registerAdmin, verifyToken };
+export { loginUser, registerAdmin, registerUser, verifyToken };

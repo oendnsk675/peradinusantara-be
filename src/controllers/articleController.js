@@ -1,5 +1,5 @@
-import prisma from "../configs/db.js";
 import slugify from "slugify";
+import prisma from "../configs/db.js";
 
 // Fungsi untuk mengambil semua berita
 const getAllNews = async (req, res) => {
@@ -7,6 +7,29 @@ const getAllNews = async (req, res) => {
     const news = await prisma.news.findMany({
       include: { category: true, author: true },
       orderBy: { created_at: "desc" }, // urutkan artikel berdasarkan tanggal dibuat
+    });
+    res
+      .status(200)
+      .json({ message: "Berikut daftar berita yang ada:", data: news });
+  } catch (error) {
+    res.status(500).json({
+      message: "Terjadi kesalahan saat memuat berita!",
+      error: error.message,
+    });
+  }
+};
+
+// Fungsi untuk mengambil semua berita
+const getDetailNews = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    if (!slug) {
+      res.status(400).json({ message: "Data slug tidak ada!" });
+      return;
+    }
+    const news = await prisma.news.findFirstOrThrow({
+      where: { slug },
+      include: { category: true, author: true },
     });
     res
       .status(200)
@@ -40,7 +63,7 @@ const addNewNews = async (req, res) => {
         title,
         slug,
         content,
-        status,
+        status: "PUBLISH", // || DRAFT | PUBLISH
         author: { connect: { id: +authorId } },
         category: { connect: { id: +category } },
         published_at: new Date(),
@@ -102,7 +125,7 @@ const updateNews = async (req, res) => {
     const { id } = req.params; //ambil id artikel dari request parameter
 
     // ambil data artikel yang akan diupdate
-    const { title, content, status, category_id } = req.body;
+    const { title, content, category_id } = req.body;
 
     // ubah title menjadi slug
     const slug = slugify(title, { lower: true, strict: true });
@@ -112,7 +135,7 @@ const updateNews = async (req, res) => {
         title,
         slug,
         content,
-        status,
+        status: "PUBLISH", // || DRAFT | PUBLISH
         category_id: { connect: { id: +category_id } },
       },
     });
@@ -135,4 +158,11 @@ const deleteNews = async (req, res) => {
   }
 };
 
-export { addNewNews, deleteNews, getAllNews, getNewsByTitle, updateNews };
+export {
+  addNewNews,
+  deleteNews,
+  getAllNews,
+  getDetailNews,
+  getNewsByTitle,
+  updateNews,
+};

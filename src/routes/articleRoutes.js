@@ -3,6 +3,7 @@ import {
   addNewNews,
   deleteNews,
   getAllNews,
+  getDetailNews,
   getNewsByTitle,
   updateNews,
 } from "../controllers/articleController.js";
@@ -13,7 +14,10 @@ import verifyRole from "../middlewares/authRole.js";
 const routerArticle = express.Router();
 
 // route untuk mengambil semua artikel yang ada
-routerArticle.get("/", verifyToken, getAllNews);
+routerArticle.get("/", getAllNews);
+
+// route untuk mengambil semua artikel yang ada
+routerArticle.get("/:slug", getDetailNews);
 
 // route untuk menambahkan artikel baru
 routerArticle.post("", verifyToken, verifyRole("ADMIN", "USER"), addNewNews);
