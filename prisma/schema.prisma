@@ -33,14 +33,16 @@ model News {
   slug         String    @unique
   content      String    @db.Text
   status       String
+  summary      String?   @db.Text
+  image        String?
   author_id    Int
-  category_id  Int
+  category_id  Int?
   published_at DateTime?
   created_at   DateTime  @default(now())
   updated_at   DateTime  @updatedAt
 
   author   User      @relation("UserNews", fields: [author_id], references: [id])
-  category Category  @relation(fields: [category_id], references: [id])
+  category Category? @relation(fields: [category_id], references: [id])
   comments Comment[]
 }
 

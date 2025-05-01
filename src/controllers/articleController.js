@@ -42,17 +42,43 @@ const getDetailNews = async (req, res) => {
   }
 };
 
+const getDetailById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      res.status(400).json({ message: "Data tidak ada!" });
+      return;
+    }
+    const news = await prisma.news.findFirstOrThrow({
+      where: { id: +id },
+      include: { category: true, author: true },
+    });
+    res
+      .status(200)
+      .json({ message: "Berikut daftar berita yang ada:", data: news });
+  } catch (error) {
+    res.status(500).json({
+      message: "Terjadi kesalahan saat memuat berita!",
+      error: error.message,
+    });
+  }
+};
+
 // tambah berita baru
 const addNewNews = async (req, res) => {
   try {
-    // console.log(req.user);
-    const { title, content, status, category } = req.body;
+    const { title, content, status, category, summary } = req.body;
     // ambil id user yang sedang login
     const authorId = req.user.id;
 
     // validasi input
     if (!title || !content) {
       return res.status(400).json({ message: "Beberapa field harus diisi!" });
+    }
+
+    let image = "";
+    if (req.file != undefined) {
+      image = `/uploads/thumbnail/${req.file.filename}`;
     }
 
     // ubah title menjadi slug
@@ -63,7 +89,9 @@ const addNewNews = async (req, res) => {
         title,
         slug,
         content,
-        status: "PUBLISH", // || DRAFT | PUBLISH
+        image,
+        summary,
+        status: status || "PUBLISH", // || DRAFT | PUBLISH
         author: { connect: { id: +authorId } },
         category: { connect: { id: +category } },
         published_at: new Date(),
@@ -74,7 +102,6 @@ const addNewNews = async (req, res) => {
       .status(201)
       .json({ message: "Berhasil menambah berita baru", data: newNews });
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       message: "Terjadi kesalahan saat menambah berita!",
       error: error.message,
@@ -125,25 +152,32 @@ const updateNews = async (req, res) => {
     const { id } = req.params; //ambil id artikel dari request parameter
 
     // ambil data artikel yang akan diupdate
-    const { title, content, category_id } = req.body;
+    const { title, content, category, status, summary } = req.body;
 
     // ubah title menjadi slug
     const slug = slugify(title, { lower: true, strict: true });
+    let data = {
+      title,
+      slug: slug,
+      content,
+      summary,
+      status: status || "PUBLISH", // || DRAFT | PUBLISH
+      category: { connect: { id: +category } },
+    };
+    if (req.file != undefined) {
+      const image = `/uploads/thumbnail/${req.file.filename}`;
+      Object.assign(data, image);
+    }
+
     const news = await prisma.news.update({
-      where: { id: parseInt(id) },
-      data: {
-        title,
-        slug,
-        content,
-        status: "PUBLISH", // || DRAFT | PUBLISH
-        category_id: { connect: { id: +category_id } },
-      },
+      where: { id: +id },
+      data,
     });
     res.status(200).json({ message: "Berita berhasil diperbarui", data: news });
   } catch (error) {
     res
       .status(500)
-      .json({ error: "Terjadi kesalahan saat memperbarui berita!" });
+      .json({ message: "Terjadi kesalahan saat memperbarui berita!" });
   }
 };
 
@@ -158,11 +192,26 @@ const deleteNews = async (req, res) => {
   }
 };
 
+const uploadImage = (req, res) => {
+  let filename = req.file.filename;
+  if (!filename) {
+    res.status(500).json({ message: "Failed to upload image" });
+    return;
+  }
+  let url = `${process.env.APP_URL}/uploads/news/${filename}`;
+  return res.status(200).json({
+    message: "Successfully upload image",
+    data: url,
+  });
+};
+
 export {
   addNewNews,
   deleteNews,
   getAllNews,
+  getDetailById,
   getDetailNews,
   getNewsByTitle,
   updateNews,
+  uploadImage,
 };
