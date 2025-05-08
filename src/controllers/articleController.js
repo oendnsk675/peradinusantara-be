@@ -4,9 +4,21 @@ import prisma from "../configs/db.js";
 // Fungsi untuk mengambil semua berita
 const getAllNews = async (req, res) => {
   try {
+    const where = {};
+    if (req.query.title) {
+      where.title = { contains: req.query.title };
+    }
+    if (req.query.category_id) {
+      where.category_id = +req.query.category_id;
+    }
+    if (req.query.author_id) {
+      where.author_id = +req.query.author_id;
+    }
+
     const news = await prisma.news.findMany({
       include: { category: true, author: true },
       orderBy: { created_at: "desc" }, // urutkan artikel berdasarkan tanggal dibuat
+      where,
     });
     res
       .status(200)
