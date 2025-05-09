@@ -1,8 +1,13 @@
 import slugify from "slugify";
 import prisma from "../configs/db.js";
+import pagination from "../utils/pagination.js";
 
 // Fungsi untuk mengambil semua berita
 const getAllNews = async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+  const { skip, take } = pagination({ page, limit });
+
   try {
     const where = {};
     if (req.query.title) {
@@ -15,14 +20,27 @@ const getAllNews = async (req, res) => {
       where.author_id = +req.query.author_id;
     }
 
+    // untuk menghitung total berita
+    const total = await prisma.news.count();
+
     const news = await prisma.news.findMany({
       include: { category: true, author: true },
       orderBy: { created_at: "desc" }, // urutkan artikel berdasarkan tanggal dibuat
       where,
+      skip,
+      take,
     });
-    res
-      .status(200)
-      .json({ message: "Berikut daftar berita yang ada:", data: news });
+
+    res.status(200).json({
+      message: "Berikut daftar berita yang ada:",
+      data: news,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (error) {
     res.status(500).json({
       message: "Terjadi kesalahan saat memuat berita!",
